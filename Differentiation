@@ -1,0 +1,612 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "source": [
+        "###Estimating Derivatives."
+      ],
+      "metadata": {
+        "id": "baQhbUGXc1gq"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Below are imported packages that will support the functions and expressions needed for the coding throughout this project."
+      ],
+      "metadata": {
+        "id": "7_GVS4Iw3H5U"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import math\n",
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "import matplotlib.pyplot as plt"
+      ],
+      "metadata": {
+        "id": "or5cs3o99UhX"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Included next are declared definitions and the continuous function $4e^{-x}$ from Project Part 1."
+      ],
+      "metadata": {
+        "id": "ysoa5SrJ3WwS"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "CozutHleeReO"
+      },
+      "outputs": [],
+      "source": [
+        "def true_error(true_value, approx_value):\n",
+        "   return true_value - approx_value\n",
+        "\n",
+        "\n",
+        "def relative_error(true_value, approx_value):\n",
+        "  return true_error(true_value, approx_value) / true_value\n",
+        "\n",
+        "\n",
+        "def approx_error(present_approx, previous_approx):\n",
+        "  return present_approx - previous_approx\n",
+        "\n",
+        "\n",
+        "def approx_relative_error(present_approx, previous_approx):\n",
+        "  return approx_error(previous_approx, present_approx) / present_approx"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def Taylor_Coefficient(degree, input):\n",
+        "  return 4*(-1)**(degree)*(math.exp((-1)*input))/(math.factorial(degree))\n",
+        "\n",
+        "def Taylor_Term(degree, input):\n",
+        "  return Taylor_Coefficient(degree, input)*((input - 3)**(degree))\n",
+        "\n",
+        "def Taylor_Polynomial(degree, input):\n",
+        "  sum = 0\n",
+        "\n",
+        "  for i in range(0, degree + 1):\n",
+        "    sum = sum + Taylor_Term(i, input)\n",
+        "  return sum\n",
+        "\n",
+        "function = lambda x: 4*math.exp(-x)"
+      ],
+      "metadata": {
+        "id": "xr4e2t8M-ICe"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "In order to continue the computing of the above continuous function, the forward difference, backward difference, central difference and finite difference are all written into functions and defined with explanatory labels.\n",
+        "\n"
+      ],
+      "metadata": {
+        "id": "02J7T0aJilss"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def forward_difference(function, start, step_size):\n",
+        "  return (function(start + step_size) - function(start))/step_size\n",
+        "\n",
+        "def backward_difference(function, start, step_size):\n",
+        "  return (function(start) - function(start - step_size))/step_size\n",
+        "\n",
+        "def central_difference(function, start, step_size):\n",
+        "  return (function(start + step_size) - function(start - step_size))/(2 * step_size)\n",
+        "\n",
+        "def finite_difference(function, start, step_size):\n",
+        "  return (function(start + 2*step_size)- 2*function(start + step_size) + function(start))/step_size**2"
+      ],
+      "metadata": {
+        "id": "BcwkLj807Kgk"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Five different values for step sizes are declared for use in approximating answers to the actual value."
+      ],
+      "metadata": {
+        "id": "F7NNPpAJ7Aur"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "center = 3\n",
+        "step_sizes = [1, .1 , .01, .001, .0001, .00001]\n",
+        "\n",
+        "forward_approx = [forward_difference(function, center, step) for step in step_sizes]\n",
+        "backward_approx = [backward_difference(function, center, step) for step in step_sizes]\n",
+        "central_approx = [central_difference(function, center, step) for step in step_sizes]\n",
+        "finite_approx = [finite_difference(function, center, step) for step in step_sizes]\n",
+        "\n",
+        "# exact value of first and second derivative at x=3\n",
+        "exact = -4*math.exp(-center)\n",
+        "exact_second = 4*math.exp(-center)\n",
+        "\n",
+        "# error approximations\n",
+        "true_forward = [true_error(exact, approx) for approx in forward_approx]\n",
+        "relative_forward = [relative_error(exact, approx) for approx in forward_approx]\n",
+        "\n",
+        "true_backward = [true_error(exact, approx) for approx in backward_approx]\n",
+        "relative_backward = [relative_error(exact, approx) for approx in backward_approx]\n",
+        "\n",
+        "true_central = [true_error(exact, approx) for approx in central_approx]\n",
+        "relative_central = [relative_error(exact, approx) for approx in central_approx]\n",
+        "\n",
+        "true_finite = [true_error(exact_second, approx) for approx in finite_approx]\n",
+        "relative_finite = [relative_error(exact, approx) for approx in finite_approx]"
+      ],
+      "metadata": {
+        "id": "EDjkzVCG_bi6"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "###Comparing values to actual values in table form."
+      ],
+      "metadata": {
+        "id": "RixxfN9S7lgU"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "The below four tables compare using the functions that were declared earlier. Each table shows the true error and relative error of each approximation."
+      ],
+      "metadata": {
+        "id": "Ms2v5baR7u7O"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Forward Difference Approximation**\n",
+        "\n",
+        "The forward difference has consistently given an underestimation."
+      ],
+      "metadata": {
+        "id": "vFQONjE078qg"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# creating forward difference approximation table\n",
+        "forward_data = {'Step': [step for step in step_sizes],\n",
+        "        'Forward Approximation': [forward for forward in forward_approx],\n",
+        "        'Exact': exact,\n",
+        "        'True Error': [error for error in true_forward],\n",
+        "        'Relative Error': [error for error in relative_forward]}\n",
+        "\n",
+        "forward_table = pd.DataFrame(forward_data)\n",
+        "print(forward_table)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "14cr8mDqUvQe",
+        "outputId": "676c11cb-29df-46f6-cae7-d31b7cf21596"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "      Step  Forward Approximation     Exact    True Error  Relative Error\n",
+            "0  1.00000              -0.125886 -0.199148 -7.326256e-02        0.632121\n",
+            "1  0.10000              -0.189515 -0.199148 -9.633634e-03        0.951626\n",
+            "2  0.01000              -0.198156 -0.199148 -9.924305e-04        0.995017\n",
+            "3  0.00100              -0.199049 -0.199148 -9.954095e-05        0.999500\n",
+            "4  0.00010              -0.199138 -0.199148 -9.957081e-06        0.999950\n",
+            "5  0.00001              -0.199147 -0.199148 -9.957363e-07        0.999995\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Backward Difference Approximation**\n",
+        "\n",
+        "The backward difference gives the best approximation for the first derivitive."
+      ],
+      "metadata": {
+        "id": "vsOWcUdd8A9I"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# creating backward difference approximation table\n",
+        "backward_data = {'Step': [step for step in step_sizes],\n",
+        "        'Backward Approximation': [backward for backward in backward_approx],\n",
+        "        'True Error': [error for error in true_backward],\n",
+        "        'Relative Error': [error for error in relative_backward]}\n",
+        "\n",
+        "backward_table = pd.DataFrame(backward_data)\n",
+        "print(backward_table)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "MULhiG1m80sJ",
+        "outputId": "d5d74bd0-6058-4a67-d613-00232c2c76a9"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "      Step  Backward Approximation    True Error  Relative Error\n",
+            "0  1.00000               -0.342193  1.430446e-01        1.718282\n",
+            "1  0.10000               -0.209446  1.029779e-02        1.051709\n",
+            "2  0.01000               -0.200147  9.990688e-04        1.005017\n",
+            "3  0.00100               -0.199248  9.960734e-05        1.000500\n",
+            "4  0.00010               -0.199158  9.957746e-06        1.000050\n",
+            "5  0.00001               -0.199149  9.957457e-07        1.000005\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Central Difference Approximation**\n",
+        "\n",
+        "The central difference has consistently given an overestimation."
+      ],
+      "metadata": {
+        "id": "ea2NJ3d98GNu"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# creating central difference approximation table\n",
+        "central_data = {'Step': [step for step in step_sizes],\n",
+        "        'Central Approximation': [central for central in central_approx],\n",
+        "        'True Error': [error for error in true_central],\n",
+        "        'Relative Error': [error for error in relative_central]}\n",
+        "\n",
+        "central_table = pd.DataFrame(central_data)\n",
+        "print(central_table)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "9RTrEsQ-9vHZ",
+        "outputId": "85d7bb1e-d79d-4a7a-fd71-41b52032ab75"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "      Step  Central Approximation    True Error  Relative Error\n",
+            "0  1.00000              -0.234039  3.489102e-02        1.175201\n",
+            "1  0.10000              -0.199480  3.320798e-04        1.001668\n",
+            "2  0.01000              -0.199152  3.319154e-06        1.000017\n",
+            "3  0.00100              -0.199148  3.319135e-08        1.000000\n",
+            "4  0.00010              -0.199148  3.323673e-10        1.000000\n",
+            "5  0.00001              -0.199148  4.712675e-12        1.000000\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Finite Difference Approximation**"
+      ],
+      "metadata": {
+        "id": "2kesgA7r8J2B"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# creating finite difference table\n",
+        "finite_data = {'Step': [step for step in step_sizes],\n",
+        "        'Finite Approximation': [central for central in finite_approx],\n",
+        "        'Exact': exact_second,\n",
+        "        'True Error': [error for error in true_finite],\n",
+        "        'Relative Error': [error for error in relative_finite]}\n",
+        "\n",
+        "finite_table = pd.DataFrame(finite_data)\n",
+        "print(finite_table)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "KGgIQpD1-MFP",
+        "outputId": "6a187abc-caac-46bf-c7c4-a6b1a814d392"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "      Step  Finite Approximation     Exact  True Error  Relative Error\n",
+            "0  1.00000              0.079575  0.199148    0.119573       -0.399576\n",
+            "1  0.10000              0.180347  0.199148    0.018801       -0.905592\n",
+            "2  0.01000              0.197168  0.199148    0.001980       -0.990058\n",
+            "3  0.00100              0.198949  0.199148    0.000199       -0.999001\n",
+            "4  0.00010              0.199128  0.199148    0.000020       -0.999900\n",
+            "5  0.00001              0.199146  0.199148    0.000002       -0.999990\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "###Lagrange Interpolation."
+      ],
+      "metadata": {
+        "id": "xQw3WB1rc4UD"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "The Lagrange interpolation formula is given below:\n",
+        "$$\\frac{(x-x_1)(x-x_2)...(x-x_n)}{(x_0-x_1)(x_0-x_2)...(x_0-x_n)}f(x_0) + \\frac{(x-x_0)(x-x_2)...(x-x_n)}{(x_1-x_0)(x_1-x_2)...(x_1-x_n)}f(x_1) + ... +\\frac{(x-x_1)(x-x_2)...(x-x_n)}{(x_n-x_0)(x_n-x_1)...(x_n-x_{n-1})}f(x_n)$$"
+      ],
+      "metadata": {
+        "id": "ToopHp5D7JFW"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Utilizing $f$ from Project Module 1, we add: $$(center, f(center))$$\n",
+        "\n",
+        "$$(center + 0.1, f(center))$$\n",
+        "\n",
+        "$$(2center,f(2center))$$"
+      ],
+      "metadata": {
+        "id": "9qnW9UMPB_Zz"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def lagrange_coefficient(input, output, index, variable):\n",
+        "  lang_coefficient = 1\n",
+        "  for i in range(len(input)):\n",
+        "    if i == index:\n",
+        "      continue\n",
+        "    else:\n",
+        "      lang_coefficient = lang_coefficient*(variable - input[i])/(input[index]-input[i])\n",
+        "  return lang_coefficient\n",
+        "\n",
+        "def lagrange_interpolator(input, output, variable):\n",
+        "  lang_interpolator = 0\n",
+        "  for i in range(len(input)):\n",
+        "    lang_interpolator = lang_interpolator + lagrange_coefficient(input, output, i, variable)*output[i]\n",
+        "  return lang_interpolator\n",
+        "\n",
+        "input = [center, center+0.1, 2*center]\n",
+        "output = [function(value) for value in input]\n",
+        "\n",
+        "x = np.arange(1.5, 6.5, .1)\n",
+        "\n",
+        "ax = plt.axes()\n",
+        "ax.set_facecolor('grey')\n",
+        "\n",
+        "plt.scatter(input ,output, c='#32cd32')\n",
+        "plt.plot(x, lagrange_interpolator(input, output, x), c='pink')\n",
+        "plt.plot(x, 4*np.exp(-x), c='#CBC3E3')\n",
+        "plt.title('Graph of Lagrange Interpolator')\n",
+        "plt.legend(['Lagrange Interpolator', '$4e^{-x}$'])\n",
+        "\n",
+        "plt.show()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 281
+        },
+        "id": "gs1jkmttSvlS",
+        "outputId": "54b2a310-51ca-4a71-bd8e-26e6007ac749"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "<Figure size 432x288 with 1 Axes>"
+            ],
+            "image/png": "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\n"
+          },
+          "metadata": {
+            "needs_background": "light"
+          }
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "The ***absolute*** and the ***relative*** error is then computed for $interpolation$ at $center$ $+0.2.$"
+      ],
+      "metadata": {
+        "id": "50GwY9JAC4zH"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# computing errors for lagrange interpolation and printing errors\n",
+        "lagrange_true_error = [true_error(function(center), lagrange_interpolator(input, output, center+0.2))]\n",
+        "lagrange_relative_error = [relative_error(function(center), lagrange_interpolator(input, output, center+0.2))]\n",
+        "\n",
+        "lagrange_error_data = {'True Error': lagrange_true_error,\n",
+        "              'Relative Error': lagrange_relative_error}\n",
+        "\n",
+        "leg_table = pd.DataFrame(lagrange_error_data)\n",
+        "print(leg_table)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "GJv-vsVBedbd",
+        "outputId": "66dc3924-6c38-4313-97f6-b857eb2b7fb7"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "   True Error  Relative Error\n",
+            "0    0.037031        0.814053\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "The ***absolute*** and the ***relative*** error is then computed for the $second$ $derivative$ of $interpolation$ at $center$ $+0.2.$"
+      ],
+      "metadata": {
+        "id": "jQYGi_jKDn1Q"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# seperating each term of lagrange second derivative approximation\n",
+        "first_term = 2*output[0]/((input[0]-input[1])*(input[0]-input[2]))\n",
+        "second_term = 2*output[1]/((input[1]-input[0])*(input[1]-input[2]))\n",
+        "third_term = 2*output[2]/((input[2]-input[0])*(input[2]-input[1]))\n",
+        "\n",
+        "lang_second_deriv = first_term + second_term + third_term\n",
+        "lang_second_deriv\n",
+        "\n",
+        "true_second_error = [true_error(exact_second, lang_second_deriv)]\n",
+        "relative_second_error = [relative_error(exact_second, lang_second_deriv)]\n",
+        "\n",
+        "second_error_data = {'True Error': true_second_error,\n",
+        "              'Relative Error': relative_second_error}\n",
+        "\n",
+        "# printing errors in table\n",
+        "leg_second_table = pd.DataFrame(second_error_data)\n",
+        "print(leg_second_table)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "uFlX4OafwfrT",
+        "outputId": "1672e0ce-6751-4e0e-d4a2-4fc032f102e3"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "   True Error  Relative Error\n",
+            "0     0.11195        0.437854\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Since the function is constant our derivative is 0."
+      ],
+      "metadata": {
+        "id": "wuf0uyWO0huq"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "###Comments and Findings"
+      ],
+      "metadata": {
+        "id": "ScRwh82q_Nuo"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "\n",
+        "In the Lagrange interpolation weighting function: $$L_i(x)=\\prod_{j = 0}^{n} \\frac{x-x_j}{x_i-x_j} \\quad$$ where $i \\neq j$, $x_i$ and $x_j$ represent the x-coordinates of the $ith$ and $jth$ points respectively.\n",
+        "\n",
+        "The difference between them, $$(x_i-x_j),$$ is the distance between the points.\n",
+        "\n",
+        "This formula calculates the polynomial coefficients using the Langrange basis polynomials and then evalutes the polynomial at $x$ to obtain the interpolated value."
+      ],
+      "metadata": {
+        "id": "P2saenLwA0WT"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "While the findings are commented throughout the report, it's important to note the shortcomings of approximating the derivative when the continuous function is known.\n",
+        "\n",
+        "When using an $h$ value, the smaller the value used gives a closer approximation... until it doesn't. When a $h$ gets ***too*** small, the $h$ value can actually move the approximation further away from the derivative.\n",
+        "\n",
+        "Another shortcoming stands on the shoulders of the software operating the computers. A computer can only hold a finite amount of information. The smaller the $h$ value is used, the larger the amount of digits that are being stored. Eventually, the computer will run out of room, and mistakes (sometimes fatal) will be the consequence."
+      ],
+      "metadata": {
+        "id": "oXfYpS_bESOv"
+      }
+    }
+  ]
+}
